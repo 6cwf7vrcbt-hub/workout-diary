@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>筋トレ日記</title>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --primary: #1d4ed8;
+        --primary-dark: #153da9;
+        --primary-soft: #dbeafe;
+        --accent: #e2e8f0;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --danger: #dc2626;
+        --danger-dark: #991b1b;
+        --success: #16a34a;
+        --warning: #f59e0b;
+        --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+        background: linear-gradient(135deg, #eef6ff 0%, #f8fafc 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1220px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        padding: 28px;
+      }
+
+      h1 {
+        margin: 0 0 20px;
+        font-size: clamp(1.8rem, 2vw, 2.4rem);
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .summary {
+        background: #eff6ff;
+        color: var(--primary-dark);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 600;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.7fr 1fr;
+        gap: 22px;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      input, textarea, button, select {
+        font: inherit;
+      }
+
+      input, textarea, select {
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: #fff;
+        color: var(--text);
+      }
+
+      input:focus, textarea:focus, select:focus {
+        outline: 2px solid rgba(29, 78, 216, 0.2);
+        border-color: var(--primary);
+      }
+
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      .input-wrap { position: relative; }
+
+      .suggestions {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        z-index: 10;
+        overflow: hidden;
+      }
+
+      .suggestions.hidden { display: none; }
+
+      .suggestion-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        border: none;
+        background: white;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .suggestion-item:hover { background: #eff6ff; }
+
+      .sidebar {
+        background: #f8fafc;
+        border: 1px solid var(--accent);
+        border-radius: 18px;
+        padding: 18px;
+      }
+
+      .sidebar h2 { margin: 0 0 14px; font-size: 1.2rem; }
+
+      .tool-checklist {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .tool-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        background: white;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+      }
+
+      .tool-option input {
+        width: 18px;
+        height: 18px;
+      }
+
+      .recommend-box {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 12px;
+      }
+
+      .recommend-box h3 { margin: 0 0 10px; font-size: 1rem; }
+
+      .recommend-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .recommend-list li {
+        background: white;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        padding: 8px 10px;
+      }
+
+      .timer-panel {
+        background: linear-gradient(135deg, #111827, #1f2937);
+        color: white;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 18px;
+      }
+
+      .timer-panel h3 { margin: 0 0 12px; font-size: 1.05rem; }
+
+      .timer-display {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-align: center;
+        margin: 10px 0 18px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .timer-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .timer-controls button {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .timer-start { background: var(--success); color: white; }
+      .timer-stop { background: #fca5a5; color: #7f1d1d; }
+      .timer-reset { background: #e5e7eb; color: var(--text); }
+
+      .timer-input-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .timer-input-row input {
+        width: 100%;
+        background: rgba(255,255,255,0.08);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .timer-input-row button {
+        background: #f5f3ff;
+        color: var(--primary-dark);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .preset-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .preset-btn {
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+
+      .library-form {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .library-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .library-item {
+        background: white;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+
+      .library-item strong { display: block; margin-bottom: 4px; }
+      .library-item small { color: var(--muted); }
+
+      .submit-btn, .delete-btn, .small-btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      .submit-btn, .small-btn {
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        width: fit-content;
+      }
+
+      .small-btn {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+      }
+
+      .submit-btn:hover, .delete-btn:hover, .small-btn:hover { transform: translateY(-1px); }
+
+      .entries {
+        list-style: none;
+        padding: 0;
+        margin: 26px 0 0;
+        display: grid;
+        gap: 14px;
+      }
+
+      .entry {
+        border: 1px solid var(--accent);
+        border-radius: 16px;
+        padding: 18px 20px;
+        background: #f8fafc;
+      }
+
+      .entry-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .entry-date { font-weight: 700; color: var(--primary-dark); }
+
+      .entry-main {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+        color: var(--text);
+        font-size: 0.98rem;
+      }
+
+      .entry-main strong { color: var(--text); }
+      .entry-note {
+        margin-top: 12px;
+        color: var(--muted);
+        white-space: pre-wrap;
+        line-height: 1.6;
+      }
+
+      .delete-btn {
+        background: #fee2e2;
+        color: var(--danger-dark);
+        font-weight: 700;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 28px 16px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        color: var(--muted);
+        background: #f8fafc;
+      }
+
+      @media (max-width: 900px) { .content { grid-template-columns: 1fr; } }
+      @media (max-width: 640px) {
+        .container { padding: 16px; }
+        .card { padding: 18px; }
+        .header-row { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header-row">
+          <h1>筋トレ日記</h1>
+          <div id="totalCount" class="summary">記録数: 0</div>
+        </div>
+
+        <div class="content">
+          <div>
+            <form id="logForm">
+              <div class="form-grid">
+                <label>
+                  日付
+                  <input type="date" id="date" required />
+                </label>
+                <label>
+                  部位
+                  <input type="text" id="part" placeholder="胸・脚・背中" required />
+                </label>
+                <label>
+                  種目
+                  <div class="input-wrap">
+                    <input type="text" id="exercise" placeholder="ベンチプレス" autocomplete="off" required />
+                    <div id="suggestions" class="suggestions hidden" aria-live="polite"></div>
+                  </div>
+                </label>
+                <label>
+                  セット数
+                  <input type="number" id="sets" min="1" value="3" required />
+                </label>
+                <label>
+                  回数
+                  <input type="number" id="reps" min="1" value="10" required />
+                </label>
+                <label>
+                  重量(kg)
+                  <input type="number" id="weight" min="0" step="0.5" value="0" required />
+                </label>
+              </div>
+
+              <label>
+                種目メモ
+                <textarea id="exerciseComment" placeholder="フォームが良かった・少し重く感じた・休憩は90秒で..."></textarea>
+              </label>
+
+              <label>
+                記録メモ
+                <textarea id="memo" placeholder="今日は胸の張りが良かった..."></textarea>
+              </label>
+
+              <button type="submit" class="submit-btn">記録を追加</button>
+            </form>
+
+            <ul id="entries" class="entries"></ul>
+          </div>
+
+          <aside class="sidebar">
+            <div class="timer-panel">
+              <h3>レストタイマー</h3>
+              <div id="timerDisplay" class="timer-display">01:30</div>
+              <div class="timer-controls">
+                <button id="timerStartBtn" class="timer-start" type="button">開始</button>
+                <button id="timerStopBtn" class="timer-stop" type="button">停止</button>
+                <button id="timerResetBtn" class="timer-reset" type="button">リセット</button>
+              </div>
+              <div class="timer-input-row">
+                <input type="number" id="customTimerInput" min="0" max="600" step="5" value="90" aria-label="休憩時間（秒）" />
+                <button id="customTimerBtn" type="button">セット</button>
+              </div>
+              <div class="preset-row">
+                <button class="preset-btn" type="button" data-seconds="30">30s</button>
+                <button class="preset-btn" type="button" data-seconds="60">1m</button>
+                <button class="preset-btn" type="button" data-seconds="90">1:30</button>
+                <button class="preset-btn" type="button" data-seconds="180">3m</button>
+              </div>
+            </div>
+
+            <h2>持っている道具</h2>
+            <div class="tool-checklist" id="toolChecklist"></div>
+
+            <div class="recommend-box">
+              <h3>おすすめ種目</h3>
+              <ul id="recommendations" class="recommend-list"></ul>
+            </div>
+
+            <h2 style="margin-top: 20px;">種目ライブラリ</h2>
+            <div class="library-form">
+              <input id="newExerciseName" type="text" placeholder="種目名 例: ディップス" />
+              <textarea id="newExerciseComment" rows="3" placeholder="種目のコメントを追加"></textarea>
+              <button id="addExerciseBtn" type="button" class="small-btn">種目を追加</button>
+            </div>
+
+            <ul id="exerciseLibraryList" class="library-list"></ul>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'workout-diary-entries';
+      const LIBRARY_KEY = 'workout-exercise-library';
+      const TOOL_KEY = 'workout-tools';
+      const TIMER_KEY = 'workout-timer';
+
+      const form = document.getElementById('logForm');
+      const entriesList = document.getElementById('entries');
+      const totalCount = document.getElementById('totalCount');
+      const exerciseInput = document.getElementById('exercise');
+      const exerciseCommentInput = document.getElementById('exerciseComment');
+      const suggestionsBox = document.getElementById('suggestions');
+      const newExerciseName = document.getElementById('newExerciseName');
+      const newExerciseComment = document.getElementById('newExerciseComment');
+      const exerciseLibraryList = document.getElementById('exerciseLibraryList');
+      const toolChecklist = document.getElementById('toolChecklist');
+      const recommendationsList = document.getElementById('recommendations');
+      const timerDisplay = document.getElementById('timerDisplay');
+      const timerStartBtn = document.getElementById('timerStartBtn');
+      const timerStopBtn = document.getElementById('timerStopBtn');
+      const timerResetBtn = document.getElementById('timerResetBtn');
+      const customTimerInput = document.getElementById('customTimerInput');
+      const customTimerBtn = document.getElementById('customTimerBtn');
+      const presetButtons = document.querySelectorAll('.preset-btn');
+
+      const defaultLibrary = [
+        { name: 'ベンチプレス', comment: '胸の押し上げ、フォームを重視', tools: ['ベンチ', 'バーベル', 'プレート'] },
+        { name: 'ベンチプレス（インクライン）', comment: '上部胸を重点的に刺激', tools: ['ベンチ', 'バーベル', 'プレート'] },
+        { name: 'ベンチプレス（デクライン）', comment: '下部胸を意識', tools: ['ベンチ', 'バーベル', 'プレート'] },
+        { name: 'ダンベルプレス', comment: '胸の伸展幅を確保しやすい', tools: ['ダンベル', 'ベンチ'] },
+        { name: 'ダンベルカール', comment: '二頭筋をしっかり追う', tools: ['ダンベル'] },
+        { name: 'ダンベルフライ', comment: '胸の伸びを感じやすい', tools: ['ダンベル', 'ベンチ'] },
+        { name: 'ダンベルスクワット', comment: '脚の安定感を養う', tools: ['ダンベル'] },
+        { name: 'ダンベルオーバーヘッドプレス', comment: '肩全体と上半身を鍛える', tools: ['ダンベル'] },
+        { name: 'スクワット', comment: '下半身の基本種目', tools: ['バーベル', 'プレート', 'ラック'] },
+        { name: 'バーベルスクワット', comment: '重量を扱う基本種目', tools: ['バーベル', 'プレート', 'ラック'] },
+        { name: 'レッグプレス', comment: '脚の筋肥大に適している', tools: ['レッグプレス機'] },
+        { name: 'デッドリフト', comment: '背中と脚を一緒に鍛える', tools: ['バーベル', 'プレート'] },
+        { name: '懸垂', comment: '背中の大きな種目', tools: ['懸垂バー'] },
+        { name: 'チンニング', comment: '上腕二頭筋も鍛えられる', tools: ['懸垂バー'] },
+        { name: 'ラットプルダウン', comment: '背中の引き系で使いやすい', tools: ['ラットプルダウン機'] },
+        { name: 'オーバーヘッドプレス', comment: '肩の強化におすすめ', tools: ['バーベル', 'プレート', 'ラック'] },
+        { name: 'ショルダープレス', comment: '肩幅の強化', tools: ['バーベル', 'プレート', 'ラック'] },
+        { name: 'アームカール', comment: '上腕二頭筋を集中', tools: ['バーベル', 'ダンベル', 'ケーブルマシン'] },
+        { name: 'ハンマーカール', comment: '腕の厚みを作る', tools: ['ダンベル'] },
+        { name: 'ケーブルプレス', comment: 'フォームを固定しやすい', tools: ['ケーブルマシン'] },
+        { name: 'ケーブルカール', comment: '負荷を落とさず追いやすい', tools: ['ケーブルマシン'] },
+        { name: 'ヒップスラスト', comment: 'お尻の筋力を高める', tools: ['ハンマーベル', 'ベンチ'] },
+        { name: 'プランク', comment: '体幹を安定させる', tools: ['マット'] },
+        { name: '腹筋', comment: '腹直筋を収縮させる', tools: ['マット'] },
+        { name: 'クランチ', comment: '腹筋の収縮に特化', tools: ['マット'] },
+        { name: 'ランニング', comment: '持久力と有酸素運動', tools: ['ランニングマシン'] },
+        { name: 'ジョギング', comment: '軽めの有酸素トレーニング', tools: ['ランニングマシン'] },
+        { name: '縄跳び', comment: '足腰と持久力を鍛える', tools: ['縄跳び'] }
+      ];
+
+      const allTools = ['ダンベル', 'ベンチ', 'バーベル', 'プレート', 'ラック', '懸垂バー', 'ケーブルマシン', 'ラットプルダウン機', 'レッグプレス機', 'ランニングマシン', 'マット', '縄跳び'];
+
+      let timerIntervalId = null;
+      let timerRemaining = 90;
+
+      function getLibrary() {
+        const saved = localStorage.getItem(LIBRARY_KEY);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } catch (error) {
+            console.error('Library parse error:', error);
+          }
+        }
+        localStorage.setItem(LIBRARY_KEY, JSON.stringify(defaultLibrary));
+        return defaultLibrary;
+      }
+
+      function saveLibrary(items) {
+        localStorage.setItem(LIBRARY_KEY, JSON.stringify(items));
+      }
+
+      function getSelectedTools() {
+        const saved = localStorage.getItem(TOOL_KEY);
+        if (!saved) return [];
+        try {
+          const parsed = JSON.parse(saved);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveSelectedTools(items) {
+        localStorage.setItem(TOOL_KEY, JSON.stringify(items));
+      }
+
+      function updateToolChecklist() {
+        const selected = getSelectedTools();
+        toolChecklist.innerHTML = allTools
+          .map((tool) => `
+            <label class="tool-option">
+              <input type="checkbox" value="${tool}" ${selected.includes(tool) ? 'checked' : ''} />
+              <span>${tool}</span>
+            </label>
+          `)
+          .join('');
+
+        toolChecklist.querySelectorAll('input').forEach((input) => {
+          input.addEventListener('change', () => {
+            const checked = [...toolChecklist.querySelectorAll('input:checked')].map((item) => item.value);
+            saveSelectedTools(checked);
+            updateRecommendations();
+          });
+        });
+      }
+
+      function updateRecommendations() {
+        const selectedTools = getSelectedTools();
+        const library = getLibrary();
+
+        const matches = library
+          .filter((exercise) => {
+            const tools = exercise.tools || [];
+            return tools.some((tool) => selectedTools.includes(tool));
+          })
+          .sort((a, b) => {
+            const aScore = (a.tools || []).filter((tool) => selectedTools.includes(tool)).length;
+            const bScore = (b.tools || []).filter((tool) => selectedTools.includes(tool)).length;
+            return bScore - aScore;
+          })
+          .slice(0, 6);
+
+        if (matches.length === 0) {
+          recommendationsList.innerHTML = '<li>道具を選ぶと、使える効率の良い種目が提案されます。</li>';
+          return;
+        }
+
+        recommendationsList.innerHTML = matches
+          .map((exercise) => `<li><strong>${exercise.name}</strong><br>${exercise.comment}</li>`)
+          .join('');
+      }
+
+      function formatTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
+      }
+
+      const HANATABA_URL = '';
+      let alarmAudioContext = null;
+
+      function ensureAudioContext() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        if (!alarmAudioContext) {
+          alarmAudioContext = new AudioContextClass();
+        }
+        if (alarmAudioContext.state === 'suspended') {
+          alarmAudioContext.resume().catch(() => {});
+        }
+        return alarmAudioContext;
+      }
+
+      function playHanatabaIfAvailable() {
+        if (!HANATABA_URL) return false;
+
+        try {
+          const audio = new Audio(HANATABA_URL);
+          audio.volume = 0.35;
+          audio.play().catch(() => {});
+          return true;
+        } catch (error) {
+          console.warn('Hanataba audio failed to load:', error);
+          return false;
+        }
+      }
+
+      function playAlarmSound() {
+        if (playHanatabaIfAvailable()) return;
+
+        const audioCtx = ensureAudioContext();
+        if (!audioCtx) return;
+
+        const pattern = [659.25, 783.99, 659.25, 783.99, 587.33, 698.46, 587.33, 698.46];
+        const startTime = audioCtx.currentTime + 0.05;
+
+        pattern.forEach((freq, index) => {
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          const startAt = startTime + index * 0.18;
+
+          oscillator.type = 'sawtooth';
+          oscillator.frequency.setValueAtTime(freq, startAt);
+
+          gainNode.gain.setValueAtTime(0.0001, startAt);
+          gainNode.gain.linearRampToValueAtTime(0.09, startAt + 0.03);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.16);
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.16);
+        });
+      }
+
+      function renderTimer() {
+        timerDisplay.textContent = formatTime(timerRemaining);
+      }
+
+      function saveTimerState() {
+        localStorage.setItem(TIMER_KEY, JSON.stringify({ remaining: timerRemaining }));
+      }
+
+      function startTimer() {
+        if (timerIntervalId !== null) return;
+        timerIntervalId = setInterval(() => {
+          if (timerRemaining <= 0) {
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+            timerDisplay.textContent = '00:00';
+            playAlarmSound();
+            return;
+          }
+          timerRemaining -= 1;
+          renderTimer();
+          saveTimerState();
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (timerIntervalId !== null) {
+          clearInterval(timerIntervalId);
+          timerIntervalId = null;
+        }
+        saveTimerState();
+      }
+
+      function resetTimer(seconds = 90) {
+        stopTimer();
+        timerRemaining = Math.max(0, Number(seconds) || 0);
+        renderTimer();
+        saveTimerState();
+      }
+
+      function initializeTimer() {
+        const timerSaved = localStorage.getItem(TIMER_KEY);
+        if (timerSaved) {
+          try {
+            const parsed = JSON.parse(timerSaved);
+            if (parsed && Number.isFinite(parsed.remaining)) {
+              timerRemaining = Math.max(0, Math.floor(parsed.remaining));
+            }
+          } catch (error) {
+            console.error('Timer parse error:', error);
+          }
+        }
+        renderTimer();
+      }
+
+      function updateExerciseLibraryList() {
+        const list = getLibrary();
+        exerciseLibraryList.innerHTML = list
+          .map((item) => `
+            <li class="library-item" data-exercise="${escapeHtml(item.name)}" data-comment="${escapeHtml(item.comment || '')}">
+              <strong>${escapeHtml(item.name)}</strong>
+              <small>${escapeHtml(item.comment || 'コメントなし')}</small>
+            </li>
+          `)
+          .join('');
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function getEntries() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : [];
+      }
+
+      function saveEntries(entries) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      }
+
+      function getMatches(keyword) {
+        const q = keyword.trim();
+        if (!q) return [];
+
+        const items = getLibrary();
+        const normalizedQ = q.toLowerCase().replace(/[（）()\s]/g, '');
+
+        return items
+          .map((entry) => {
+            const itemName = entry.name;
+            const normalizedName = itemName.toLowerCase().replace(/[（）()\s]/g, '');
+            let score = 99;
+            if (itemName.startsWith(q)) score = 0;
+            else if (normalizedName.startsWith(normalizedQ)) score = 1;
+            else if (itemName.includes(q)) score = 2;
+            else if (normalizedName.includes(normalizedQ)) score = 3;
+            else if ((entry.comment || '').toLowerCase().includes(q.toLowerCase())) score = 4;
+            return { ...entry, score };
+          })
+          .filter((entry) => entry.score < 99)
+          .sort((a, b) => a.score - b.score || a.name.localeCompare(b.name))
+          .slice(0, 8)
+          .map((entry) => entry.name);
+      }
+
+      function showSuggestions() {
+        const matches = getMatches(exerciseInput.value);
+        if (matches.length === 0) {
+          suggestionsBox.innerHTML = '';
+          suggestionsBox.classList.add('hidden');
+          return;
+        }
+
+        suggestionsBox.innerHTML = matches
+          .map((name) => `<button type="button" class="suggestion-item" data-value="${escapeHtml(name)}">${escapeHtml(name)}</button>`)
+          .join('');
+        suggestionsBox.classList.remove('hidden');
+      }
+
+      function hideSuggestions() {
+        suggestionsBox.innerHTML = '';
+        suggestionsBox.classList.add('hidden');
+      }
+
+      exerciseInput.addEventListener('input', showSuggestions);
+      suggestionsBox.addEventListener('click', (event) => {
+        const button = event.target.closest('.suggestion-item');
+        if (!button) return;
+        exerciseInput.value = button.dataset.value;
+        const match = getLibrary().find((item) => item.name === exerciseInput.value);
+        if (match && match.comment) {
+          exerciseCommentInput.value = match.comment;
+        }
+        hideSuggestions();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('#exercise') && !event.target.closest('.suggestion-item')) {
+          hideSuggestions();
+        }
+      });
+
+      exerciseLibraryList.addEventListener('click', (event) => {
+        const item = event.target.closest('.library-item');
+        if (!item) return;
+        const exerciseName = item.dataset.exercise;
+        const comment = item.dataset.comment;
+        exerciseInput.value = exerciseName;
+        exerciseCommentInput.value = comment || '';
+        hideSuggestions();
+      });
+
+      document.getElementById('addExerciseBtn').addEventListener('click', () => {
+        const name = newExerciseName.value.trim();
+        const comment = newExerciseComment.value.trim();
+
+        if (!name) {
+          alert('種目名を入力してください。');
+          return;
+        }
+
+        const library = getLibrary();
+        const exists = library.some((item) => item.name === name);
+        if (!exists) {
+          library.push({ name, comment, tools: [] });
+          saveLibrary(library);
+        } else {
+          const target = library.find((item) => item.name === name);
+          target.comment = comment || target.comment || '';
+          saveLibrary(library);
+        }
+
+        newExerciseName.value = '';
+        newExerciseComment.value = '';
+        updateExerciseLibraryList();
+        exerciseInput.value = name;
+        exerciseCommentInput.value = comment;
+        hideSuggestions();
+      });
+
+      timerStartBtn.addEventListener('click', startTimer);
+      timerStopBtn.addEventListener('click', stopTimer);
+      timerResetBtn.addEventListener('click', () => resetTimer(90));
+
+      customTimerBtn.addEventListener('click', () => {
+        const value = Number(customTimerInput.value);
+        if (!Number.isFinite(value) || value < 0 || value > 600) {
+          alert('0〜600秒の範囲で入力してください。');
+          return;
+        }
+        resetTimer(value);
+      });
+
+      presetButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const seconds = Number(button.dataset.seconds);
+          resetTimer(seconds);
+        });
+      });
+
+      function renderEntries() {
+        const entries = getEntries().sort((a, b) => b.date.localeCompare(a.date));
+
+        if (entries.length === 0) {
+          entriesList.innerHTML = '<li class="empty">まだ筋トレの記録がありません。最初の記録を追加しましょう。</li>';
+          totalCount.textContent = '記録数: 0';
+          return;
+        }
+
+        totalCount.textContent = `記録数: ${entries.length}`;
+        entriesList.innerHTML = entries
+          .map((entry) => `
+            <li class="entry">
+              <div class="entry-top">
+                <div class="entry-date">${entry.date}</div>
+                <button class="delete-btn" data-id="${entry.id}">削除</button>
+              </div>
+              <div class="entry-main">
+                <span><strong>部位:</strong> ${entry.part}</span>
+                <span><strong>種目:</strong> ${entry.exercise}</span>
+                <span><strong>セット:</strong> ${entry.sets} × ${entry.reps}</span>
+                <span><strong>重量:</strong> ${entry.weight} kg</span>
+              </div>
+              ${entry.exerciseComment ? `<div class="entry-note"><strong>種目メモ:</strong> ${entry.exerciseComment}</div>` : ''}
+              ${entry.memo ? `<div class="entry-note"><strong>記録メモ:</strong> ${entry.memo}</div>` : ''}
+            </li>
+          `)
+          .join('');
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const exerciseName = exerciseInput.value.trim();
+        const exerciseNote = exerciseCommentInput.value.trim();
+        const entry = {
+          id: Date.now().toString(),
+          date: document.getElementById('date').value,
+          part: document.getElementById('part').value.trim(),
+          exercise: exerciseName,
+          exerciseComment: exerciseNote,
+          sets: Number(document.getElementById('sets').value),
+          reps: Number(document.getElementById('reps').value),
+          weight: Number(document.getElementById('weight').value),
+          memo: document.getElementById('memo').value.trim(),
+        };
+
+        if (!entry.date || !entry.part || !entry.exercise) {
+          alert('日付・部位・種目を入力してください。');
+          return;
+        }
+
+        const entries = getEntries();
+        entries.push(entry);
+        saveEntries(entries);
+        form.reset();
+        document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+        hideSuggestions();
+        renderEntries();
+      });
+
+      entriesList.addEventListener('click', (event) => {
+        const deleteButton = event.target.closest('.delete-btn');
+        if (!deleteButton) return;
+
+        const id = deleteButton.dataset.id;
+        const entries = getEntries().filter((entry) => entry.id !== id);
+        saveEntries(entries);
+        renderEntries();
+      });
+
+      document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+      customTimerInput.value = String(timerRemaining);
+      initializeTimer();
+      customTimerInput.value = String(timerRemaining);
+      updateToolChecklist();
+      updateRecommendations();
+      updateExerciseLibraryList();
+      renderEntries();
+    </script>
+  </body>
+</html>
